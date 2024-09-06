@@ -1,0 +1,320 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Class Sense!</title>
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+
+<body>
+    <h1>Welcome to Class Sense!</h1>
+
+    <div class="file-upload">
+        <input type="file" id="videoFileInput" accept="video/*">
+        <button id="uploadVideo">Upload Video</button>
+    </div>
+
+
+    <!-- Container to display webcam video  -->
+    <video id="videoElement" autoplay></video>
+    <div class="buttons-container">
+        <!-- Buttons to start/end webcam and trigger matching -->
+        <button id="startWebcam">Start Webcam</button>
+        <button id="endWebcam">End Webcam</button>
+        <button id="startMatching">Start Matching</button>
+    </div>
+    <div class="faces_counts">
+        <div id="totalCount">Total Faces Count: <span id="total-count">0</span></div>
+        <div id="matchedCount">Matched Faces Count: <span id="count">0</span></div>
+    </div>
+    <!-- Display matched faces count -->
+    <div class="faces">
+        <h1>Matched Faces</h1>
+        <div id="matchedFaces"></div>
+    </div>
+    <div class="graph">
+
+        <script src="https://d3js.org/d3.v6.min.js"></script>
+        <svg width="600" height="400"></svg>
+        <div class="tooltip" id="tooltip"></div>
+
+    </div>
+    <script>
+        const videoElement = document.getElementById('videoElement');
+        const startWebcamBtn = document.getElementById('startWebcam');
+        const endWebcamBtn = document.getElementById('endWebcam');
+        const startMatchingBtn = document.getElementById('startMatching');
+        const matchedCountSpan = document.getElementById('count');
+        const matchedFacesDiv = document.getElementById('matchedFaces');
+        const videoFileInput = document.getElementById('videoFileInput');
+        const uploadVideoBtn = document.getElementById('uploadVideo');
+
+        let mediaRecorder;
+        let chunks = [];
+        let sendVideoInterval;
+        let stream;
+        let input_interval = 5000;
+        // Initial data points
+        let data = [];
+
+        // Set up the SVG canvas dimensions
+        const width = 600;
+        const height = 350;
+        const margin = { top: 20, right: 20, bottom: 50, left: 50 };
+
+        // Create scales for x and y
+        const xScale = d3.scaleTime()
+            .domain([d3.min(data, d => d.x), new Date()])
+            .range([margin.left, width - margin.right]);
+
+        const yScale = d3.scaleLinear()
+            .domain([d3.min(data, d => d.y), d3.max(data, d => d.y)])
+            .range([height - margin.bottom, margin.top]);
+
+        // Create the line generator with spline interpolation
+        const line = d3.line()
+            .x(d => xScale(d.x))
+            .y(d => yScale(d.y))
+            .curve(d3.curveMonotoneX); // Use monotone curve for smooth interpolation
+
+        // Append SVG to the body and create a group element
+        const svg = d3.select("svg");
+
+        // Append the path (line) to the group
+        const path = svg.append("path")
+            .datum(data)
+            .attr("fill", "none")
+            .attr("stroke", "steelblue")
+            .attr("stroke-width", 2)
+            .attr("d", line);
+        // Tooltip div selection
+        const tooltip = d3.select("#tooltip");
+        // Mouse move event listener
+        svg.on("mousemove", function (event) {
+            // Get mouse coordinates
+            const [mouseX, mouseY] = d3.pointer(event);
+
+            // Find the nearest data point
+            const bisect = d3.bisector(d => d.x).left;
+            const index = bisect(data, xScale.invert(mouseX));
+            const closestPoint = data[index];
+
+            // Calculate distance to the nearest data point
+            const distance = Math.abs(xScale(closestPoint.x) - mouseX);
+
+            // Check if the distance is within the range
+            if (distance < 10) { // Adjust the range as needed
+                // Show the tooltip
+                tooltip.style("opacity", 1)
+                       .html(`Time: ${new Date(closestPoint.x).toLocaleString()}<br>Face Count: ${closestPoint.y}`)
+                       .style("left", (event.pageX + 5 - 490) + "px")
+                       .style("top", (event.pageY - 28 - 670) + "px");
+            } else {
+                // Hide the tooltip if the cursor is far from any point
+                tooltip.style("opacity", 0);
+            }
+        });
+
+        // Create and append the x-axis
+        const xAxis = d3.axisBottom(xScale);
+        svg.append("g")
+            .attr("transform", `translate(0,${height - margin.bottom})`)
+            .attr("class", "x-axis")
+            .call(xAxis);
+
+        // Create and append the y-axis
+        const yAxis = d3.axisLeft(yScale);
+        svg.append("g")
+            .attr("transform", `translate(${margin.left},0)`)
+            .attr("class", "y-axis")
+            .call(yAxis);
+
+        // Add x-axis label
+        svg.append("text")
+            .attr("text-anchor", "end")
+            .attr("x", width / 2 + margin.left)
+            .attr("y", height - 10)
+            .text("Time");
+
+        // Add y-axis label
+        svg.append("text")
+            .attr("text-anchor", "end")
+            .attr("transform", "rotate(-90)")
+            .attr("y", margin.left - 35)
+            .attr("x",
+                -height / 2 + margin.top)
+            .text("Face Count");
+
+
+        // Function to update the graph
+        function updateGraph() {
+            // Update scales
+            xScale.domain([d3.min(data, d => d.x), new Date()]);
+            yScale.domain([d3.min(data, d => d.y), d3.max(data, d => d.y)]);
+
+            // Update path
+            path.datum(data)
+                .attr("d", line);
+
+            // Update x-axis and y-axis
+            svg.select(".x-axis").call(xAxis);
+            svg.select(".y-axis").call(yAxis);
+        }
+        // Continuously add data and update graph every 5 seconds
+        // setInterval(() => {
+        //     // Generate new data point
+        //     const newX = new Date().getTime();
+        //     const newY = Math.floor(Math.random() * 70) + 30; // Random value between 0 and 100
+
+        //     // Add new data point to array
+        //     data.push({ x: newX, y: newY });
+
+        //     // Update graph
+        //     updateGraph();
+        // }, input_interval);
+
+        function startWebcam() {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(mediaStream => {
+                    videoElement.srcObject = mediaStream;
+                    stream = mediaStream;
+                })
+                .catch(error => {
+                    console.error('Error accessing webcam:', error);
+                    alert('Error accessing webcam: ' + error.message);
+                });
+        }
+
+        function startRecording() {
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    chunks.push(event.data);
+                }
+            };
+            mediaRecorder.start(); // Start recording
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+        }
+        function stopWebcam() {
+            stopRecording();
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                videoElement.srcObject = null;
+                stream = null;
+            }
+            clearInterval(sendVideoInterval);
+            console.log('Webcam stopped.');
+        }
+        function displayFaces(faces) {
+            document.querySelector("#matchedFaces").innerHTML = "";
+            for (let i = 0; i < faces.length; i++) {
+                const personName = faces[i].substring(faces[i].lastIndexOf("\\") + 1, faces[i].length - 4);
+                let a = faces[i].substring(faces[i].lastIndexOf("\\")+1);
+                const matchedFaces = document.querySelector("#matchedFaces");
+                const personCard = document.createElement("div");
+                personCard.setAttribute("class", "personcard");
+                personCard.innerHTML = `<img src="../static/verified_img.svg" id="verified">
+                                         <img src="../static/faces/${a}" id = "person_img">
+                                         <div id = "personName">${personName}</div>`;
+                console.log(personCard);
+                matchedFaces.append(personCard);
+            }
+        }
+        function displayCountFaces(count_faces, total_faces) {
+            const matchedCount = document.querySelector("#count");
+            matchedCount.innerHTML = `${count_faces}`;
+
+            const totalFaces = document.querySelector("#total-count");
+            totalFaces.innerHTML = `${total_faces}`
+
+            // Generate new data point
+            const newX = new Date().getTime();
+            const newY = count_faces;// Random value between 0 and 100
+
+            // Add new data point to array
+            data.push({ x: newX, y: newY });
+
+            // Update graph
+            updateGraph();
+        }
+
+        uploadVideoBtn.addEventListener('click', () => {
+            const file = videoFileInput.files[0];
+            if (!file) {
+                alert('Please select a video file.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('video', file, 'class.mp4'); // Ensure the filename is 'class.mp4'
+
+            fetch('/upload_video', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Video uploaded successfully:', data);
+                // Handle response data as needed
+                const matched_faces = data["matched_faces"];
+                const total_faces = data["total_faces"];
+                // display the matched faces frontend
+                displayFaces(matched_faces);
+                //display the count of matched faces on frontend
+                displayCountFaces(matched_faces.length, total_faces);
+            })
+            .catch(error => {
+                console.error('Error uploading video:', error);
+            });
+        });
+        
+        function sendVideoChunks() {
+            if (chunks.length === 0) {
+                console.log('No video data recorded.');
+                return;
+            }
+            const blob = new Blob(chunks, { type: 'video/webm' });
+            const formData = new FormData();
+            formData.append('video', blob, 'live.webm');
+            fetch('/video', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Video chunk saved successfully:', data);
+                    const matched_faces = data["matched_faces"];
+                    const total_faces = data["total_faces"];
+                    // display the matched faces frontend
+                    displayFaces(matched_faces);
+                    //display the count of matched faces on frontend
+                    displayCountFaces(matched_faces.length, total_faces);
+                }).catch(error => {console.error('Error saving video chunk:', error);});
+            chunks = []; // Clear recorded chunks after sending
+        }
+        function restartRecording() {
+            stopRecording();
+            sendVideoChunks();
+            startRecording();
+        }
+        startWebcamBtn.addEventListener('click', startWebcam);
+        endWebcamBtn.addEventListener('click', stopWebcam);
+        startMatchingBtn.addEventListener('click', () => {
+            if (!stream) {
+                alert('Please start the webcam first.');
+                return;
+            }
+            startRecording();
+            sendVideoInterval = setInterval(restartRecording, input_interval); // Restart recording every 5 seconds
+        });
+    </script>
+</body>
+</html>

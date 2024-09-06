@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Class Sense</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+            color: #333;
+        }
+
+        .container {
+            max-width: 80vw;
+            margin: auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2, h3 {
+            text-align: center;
+            color: #333;
+        }
+
+        p {
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .toggle-checkbox {
+            display: none;
+        }
+        .toggle-label {
+            cursor: pointer;
+            text-align: center;
+            color: #007bff;
+            text-decoration: underline;
+            margin-bottom: 20px;
+            display: block;
+        }
+        .toggle-content {
+            display: none;
+            padding: 10px;
+            margin-top: 10px;
+            background-color: #f7f7f7;
+            border-radius: 8px;
+        }
+        .toggle-checkbox:checked + .toggle-label + .toggle-content {
+            display: block;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>About Class Sense</h1>
+        <p>Welcome to the Face Matching Project! Our goal is to provide a user-friendly platform for detecting and matching faces in images and live video streams.</p>
+
+        <input type="checkbox" id="how-it-works-checkbox" class="toggle-checkbox">
+        <label for="how-it-works-checkbox" class="toggle-label">How It Works</label>
+        <div class="toggle-content">
+            <h2>How It Works</h2>
+            <h3>Face Detection</h3>
+            <p>Our system uses advanced computer vision techniques to detect faces in images and live video streams. We leverage the power of OpenCV and other libraries to locate faces with high accuracy.</p>
+
+            <h3>Face Recognition</h3>
+            <p>Once faces are detected, our system employs sophisticated face recognition algorithms to match them against a database of known individuals. This allows us to accurately identify people based on their facial features.</p>
+
+            <h3>Real-time Processing</h3>
+            <p>Our platform is capable of processing live video streams in real-time, making it suitable for applications such as surveillance, access control, and more.</p>
+        </div>
+
+        <h2>Our Team</h2>
+        <p>The Face Matching Project was developed by a team of passionate engineers and researchers with expertise in computer vision, machine learning, and software development. We are committed to delivering cutting-edge solutions that push the boundaries of face recognition technology.</p>
+
+        <h2>Get Started</h2>
+        <p>Ready to try out our platform? Head over to the <a href="/home">home page</a> to get started! If you have any questions or feedback, feel free to <a href="/contact">contact us</a> – we'd love to hear from you.</p>
+
+        <p>Thank you for choosing Class Sense!</p>
+    </div>
+</body>
+</html>

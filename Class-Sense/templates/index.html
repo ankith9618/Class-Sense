@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Sense</title>
+    <style>
+        body {
+            padding: 0;
+            margin: 2px;
+        }
+        .navbar {
+            border: 2px solid black;
+            border-radius: 10px;
+            box-shadow: 5px 3px 2px 3px rgba(0, 0, 0, 0.634);
+            background-color: beige;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        .navbar-tag {
+            color: purple;
+            font-size: xx-large;
+        }
+        .links {
+            display: flex;
+            align-items: center;
+            font-size: large;
+        }
+        .links a {
+            text-decoration: none;
+            color: black;
+            font-weight: bold;
+            margin: 0px 15px;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 12px;
+            box-shadow: 5px 3px 2px 3px rgba(0, 0, 0, 0.234);
+            position: relative;
+            top: -90px;
+        }
+        .button:hover {
+            background-color: #938e0cad;
+            color: black;
+        }
+        .images {
+            background-image: url("../static/welcome_image.png");
+            height: 90vh;
+            width: 90vw;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size:cover;
+            border-radius: 10px;
+            margin: 10px;
+            position: relative;
+            left: 4%;
+            text-align: center;
+            >h2 {
+                color: rgb(252, 182, 7);
+                font-family: Georgia, 'Times New Roman', Times, serif;
+                font-size: xx-large;
+
+            }
+        }
+        footer {
+            background-color: rgba(163, 145, 91, 0.379);
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            border: 2px solid rebeccapurple;
+            border-radius: 7px;
+            padding: 10px;
+            text-align: center;
+            margin: -20px 0px 10px 0px;
+            background-color: rgba(255, 182, 193, 0.479);
+            >h2 {color: chocolate;}
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbar-tag">Class Sense </div>
+        <div class="links">
+            <a href="/home" target="_blank">Home</a>
+            <a href="/about" target="_blank">About</a>
+            <a href="/services" target="_blank">Services</a>
+            <a href="/contact" target="_blank">Contact</a>
+        </div>
+    </div>
+    <div class="images"><h2>Welcome to Class Sense</h2></div>
+    <div class="button-container"><a href="/application" class="button">Get Started</a></div>
+    <div class="container">
+        <h2>Welcome to Class Sense</h2>
+        <p>Our project provides state-of-the-art face detection and recognition solutions for various applications.
+            Whether you're looking to enhance security, streamline authentication processes, or personalize user
+            experiences, our platform has you covered.</p>
+        <p>With our advanced algorithms and intuitive user interface, you can easily detect and match faces in images
+            and video streams. Our real-time processing capabilities make it ideal for applications such as
+            surveillance, access control, and identity verification.</p>
+        <p>Explore our website to learn more about our services, team, and how we can help you achieve your goals with
+            face matching technology.</p>
+    </div>
+    <footer>
+        <p>&copy; 2023 Class Sense. All rights reserved.</p>
+        <div class="contact-info">
+            <p><a href="/contact">Contact Us:</a></p>
+            <p>Email: ankithkumar6281@gmail.com</p>
+            <p>Phone: +91-6281558871</p>
+        </div>
+    </footer>
+</body>
+</html>
